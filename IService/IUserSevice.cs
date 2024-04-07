@@ -5,10 +5,10 @@ namespace WebApplication1.IService
 {
     public interface IUserSevice<T>
     {
-    
 
-        Task<CustomErrorClass<T>> CreateUser(User user);
-        Task<CustomErrorClass<T>> LoginUser(User user);
-        Task<IEnumerable<CustomErrorClass<T>>> GetAllUsers();
+
+        Task<T> CreateUser(User user);
+        Task<string> LoginUser(User user);
+        Task<IEnumerable<T>> GetAllUsers();
     }
 }

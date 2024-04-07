@@ -15,19 +15,20 @@ namespace WebApplication1.Service
         }
        
 
-       async Task<CustomErrorClass<T>> IUserSevice<T>.CreateUser(User user)
+       async Task<T> IUserSevice<T>.CreateUser(User user)
         {
             return await Repository.CreateUser(user);
         }
 
-      async  Task<IEnumerable<CustomErrorClass<T>>> IUserSevice<T>.GetAllUsers()
+      async  Task<IEnumerable<T>> IUserSevice<T>.GetAllUsers()
         {
             return await Repository.GetAllUsers();
         }
 
-       async Task<CustomErrorClass<T>> IUserSevice<T>.LoginUser(User user)
+       async Task<string> IUserSevice<T>.LoginUser(User user)
         {
-            return await Repository.LoginUser(user);
+             var x= await  Repository.LoginUser(user);
+            return x;
         }
     }
 }

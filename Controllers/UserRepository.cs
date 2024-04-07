@@ -25,23 +25,27 @@ namespace WebApplication1.Controllers
         {
 
             var createdUser = await _userService.CreateUser(user);
+            if(createdUser == null)
+            {
+                return Ok("user already exist");
+            }
             return Ok(createdUser); // ASP.NET Core automatically serializes the object to JSON
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<User>> LoginUser([FromBody] User user)
+        public async Task<ActionResult<string>> LoginUser([FromBody] User user)
         {
 
           
-            var loginUser = await _userService.LoginUser(user);
-            return Ok(loginUser);
-            if (loginUser.Data !=null)
+            var data = await _userService.LoginUser(user);
+            //return data;
+            if (data  ==null)
             {
-                return Ok(loginUser); // ASP.NET Core automatically serializes the object to JSON
+                return Ok("unAuhtorized");  
             }
             else
             {
-                return Ok(loginUser);
+                return Ok(data);
             }
         }
 

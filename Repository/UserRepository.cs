@@ -3,6 +3,7 @@ using WebApplication1.Data;
 using WebApplication1.IRepository;
 using WebApplication1.Model;
 using WebApplication1.Util;
+using BCrypt.Net;
 
 namespace WebApplication1.Repository
 {
@@ -11,6 +12,7 @@ namespace WebApplication1.Repository
     {
         
         protected readonly MyDbContext _dbContextFactory;
+        private static object BCryptGenerator;
 
         public UserRepository(MyDbContext dbContextFactory)
         {
@@ -20,7 +22,7 @@ namespace WebApplication1.Repository
 
         
 
-        async Task<CustomErrorClass<T>> IUserRepository<T>.CreateUser(User user)
+        async Task<T> IUserRepository<T>.CreateUser(User user)
         {
             CustomErrorClass<User> er = new Util.CustomErrorClass<User>();
 
@@ -28,45 +30,61 @@ namespace WebApplication1.Repository
                                              .FirstOrDefaultAsync(u => u.Email == user.Email);
             if (retrievedUser == null)
             {
-                HashingUtil hu = new HashingUtil();
-                user.Password = Convert.ToBase64String(hu.HashPassword(user.Password));
+               // HashingUtil hu = new HashingUtil();
+               // user.Password = Convert.ToBase64String(hu.HashPassword(user.Password));
+               user.Password = HashPassword(user.Password);
                 await _dbContextFactory.Users.AddAsync(user);
             await _dbContextFactory.SaveChangesAsync();
-                er.Data = user;
-                er.IsSuccess = true;
-            return er as CustomErrorClass<T>;
+
+                return user as T;
             }
-            er.Message = "User already exists";
-            er.IsSuccess = false;
-            return er as CustomErrorClass<T>;
+            return "user already exist" as T;
+            
+           
         }
 
-       async Task<CustomErrorClass<T>> IUserRepository<T>.LoginUser(User user)
+       async Task<string> IUserRepository<T>.LoginUser(User user)
         {
             CustomErrorClass<string> er = new Util.CustomErrorClass<string>();
-            TokenGeneration tk = new TokenGeneration();
+       
              bool userExist =  await _dbContextFactory.Users.AnyAsync(u => u.Email == user.Email);
-            if (userExist != true)
+            var user1 = await _dbContextFactory.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+          
+            if (userExist == true )
             {
+                bool passdwordVerify = VerifyPassword(user.Password, user1!.Password);
+                if(passdwordVerify == true)
+                {
+
+                TokenGeneration tk = new TokenGeneration();
                 var token = tk.GenerateToken("your_issuer", "your_audience", user.Email );
-                er.Message = "Token generated";
-                er.Data = token;
-                return er as CustomErrorClass<T>;
-             // Return the token to the client
+                return token;
+                }
+                else{
+                    return "unAuthorized";
+                }
             }
+          
             else
             {
-                er.Message = "unAuthorized";
-                er.Data = null;
-                return er as CustomErrorClass<T>; // More informative error message
+                return "unAuthorized";       
             }
         }
 
         
 
-        public Task<IEnumerable<CustomErrorClass<T>>> GetAllUsers()
+        public Task<IEnumerable<T>> GetAllUsers()
         {
             throw new NotImplementedException();
+        }
+        public   string HashPassword(string password)
+        {
+            var salt = BCrypt.Net.BCrypt.GenerateSalt();
+            return BCrypt.Net.BCrypt.HashPassword(password, salt);
+        }
+        public   bool VerifyPassword(string password, string hashedPassword)
+        {
+            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
     }
 }
