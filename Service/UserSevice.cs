@@ -1,4 +1,6 @@
-﻿using WebApplication1.IRepository;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication1.DTO;
+using WebApplication1.IRepository;
 using WebApplication1.IService;
 using WebApplication1.Model;
 using WebApplication1.Util;
@@ -15,20 +17,29 @@ namespace WebApplication1.Service
         }
        
 
-       async Task<T> IUserSevice<T>.CreateUser(User user)
+       async Task<T> IUserSevice<T>.CreateUser(UserDto user)
         {
-            return await Repository.CreateUser(user);
+            
+            var item = await Repository.CreateUser(user);
+            return item;
         }
 
       async  Task<IEnumerable<T>> IUserSevice<T>.GetAllUsers()
         {
-            return await Repository.GetAllUsers();
+            var item = await Repository.GetAllUsers();
+            return item;
         }
 
-       async Task<string> IUserSevice<T>.LoginUser(User user)
+       async Task<string> IUserSevice<T>.LoginUser(UserDto user)
         {
              var x= await  Repository.LoginUser(user);
             return x;
+        }
+       
+
+        async Task<dynamic> IUserSevice<T>.CreateCourse(CourseDto courseDto)
+        {
+            return await Repository.CreateCourse(courseDto);
         }
     }
 }

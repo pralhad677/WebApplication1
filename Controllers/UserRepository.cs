@@ -9,6 +9,7 @@ namespace WebApplication1.Controllers
     using Microsoft.AspNetCore.Mvc;
     using System.Text;
     using System.Threading.Tasks;
+    using WebApplication1.DTO;
     using WebApplication1.IService;
 
     [Route("api/[controller]")]
@@ -26,7 +27,7 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<ActionResult<User>> CreateUser([FromBody] User user)
+        public async Task<ActionResult<User>> CreateUser([FromBody] UserDto user)
         {
 
             var createdUser = await _userService.CreateUser(user);
@@ -38,7 +39,7 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> LoginUser([FromBody] User user)
+        public async Task<ActionResult<string>> LoginUser([FromBody] UserDto user)
         {
 
           
@@ -83,6 +84,12 @@ namespace WebApplication1.Controllers
                 // Log the exception
                 return StatusCode(500, "An error occurred while processing your request.");
             }
+        }
+        
+        [HttpPost("create-course")]
+        public async Task<dynamic> CreateCourse(CourseDto courseDto)
+        {
+           return await _userService.CreateCourse(courseDto);
         }
     }
     

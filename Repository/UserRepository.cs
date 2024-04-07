@@ -6,6 +6,13 @@ using WebApplication1.Util;
 using BCrypt.Net;
 using Microsoft.EntityFrameworkCore.Internal;
 using System.Collections.Generic;
+using WebApplication1.DTO;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+
+
+
 
 namespace WebApplication1.Repository
 {
@@ -15,16 +22,20 @@ namespace WebApplication1.Repository
         
         protected readonly MyDbContext _dbContextFactory;
         private static object BCryptGenerator;
+        private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserRepository(MyDbContext dbContextFactory)
+        public UserRepository(MyDbContext dbContextFactory, IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
             
             _dbContextFactory = dbContextFactory;
+            _mapper= mapper;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         
 
-        async Task<T> IUserRepository<T>.CreateUser(User user)
+        async Task<T> IUserRepository<T>.CreateUser(UserDto user)
         {
             CustomErrorClass<User> er = new Util.CustomErrorClass<User>();
 
@@ -35,17 +46,18 @@ namespace WebApplication1.Repository
                // HashingUtil hu = new HashingUtil();
                // user.Password = Convert.ToBase64String(hu.HashPassword(user.Password));
                user.Password = HashPassword(user.Password);
-                await _dbContextFactory.Users.AddAsync(user);
+                var user2 = _mapper.Map<UserDto, User>(user);
+                await _dbContextFactory.Users.AddAsync(user2);
             await _dbContextFactory.SaveChangesAsync();
 
-                return user as T;
+                return user2 as T;
             }
             return "user already exist" as T;
             
            
         }
 
-       async Task<string> IUserRepository<T>.LoginUser(User user)
+       async Task<string> IUserRepository<T>.LoginUser(UserDto user)
         {
             CustomErrorClass<string> er = new Util.CustomErrorClass<string>();
        
@@ -80,6 +92,8 @@ namespace WebApplication1.Repository
             var allUser = (IEnumerable<T>) await _dbContextFactory.Users.ToListAsync();
             return allUser;
         }
+
+       
         public   string HashPassword(string password)
         {
             var salt = BCrypt.Net.BCrypt.GenerateSalt();
@@ -89,5 +103,39 @@ namespace WebApplication1.Repository
         {
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
+      async  Task<dynamic > IUserRepository<T>.CreateCourse(CourseDto courseDto)
+        {
+            try
+            {
+                string authorizationHeader = _httpContextAccessor.HttpContext.Request.Headers["Authorization"]!;
+                string[] parts = authorizationHeader.Split(' ');
+                var token = parts[1];
+                TokenValidation tokenValidation = new TokenValidation();
+                var claimsPrincipal = tokenValidation.ValidateTokenAndGetClaims(token);
+
+                if (claimsPrincipal != null)
+                {
+                    string userEmail = tokenValidation.ExtractUserEmailFromClaims(claimsPrincipal);
+                    Console.WriteLine($"User email: {userEmail}");
+                    var course1 = _mapper.Map<CourseDto, Course>(courseDto);
+                    course1.UserId = 1;
+                    EntityEntry<Course> courseEntry = await _dbContextFactory.Courses.AddAsync(course1);
+                    Course course2 = courseEntry.Entity;
+                    return 'a';
+                }
+                else
+                {
+                    return 'b';
+                }
+            }
+            catch (System.Exception ex)
+            {
+                // Log the exception
+                return "error";
+               // return StatusCode(500, "An error occurred while processing your request."); // Return HTTP 500 Internal Server Error response
+            }
+        }
+
+        
     }
 }

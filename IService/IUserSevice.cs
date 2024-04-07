@@ -1,4 +1,6 @@
-﻿using WebApplication1.Model;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication1.DTO;
+using WebApplication1.Model;
 using WebApplication1.Util;
 
 namespace WebApplication1.IService
@@ -7,8 +9,9 @@ namespace WebApplication1.IService
     {
 
 
-        Task<T> CreateUser(User user);
-        Task<string> LoginUser(User user);
+        Task<T> CreateUser(UserDto user);
+        Task<string> LoginUser(UserDto user);
         Task<IEnumerable<T>> GetAllUsers();
+        Task<dynamic> CreateCourse(CourseDto courseDto);
     }
 }
