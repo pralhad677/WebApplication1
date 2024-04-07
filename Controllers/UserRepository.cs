@@ -91,6 +91,13 @@ namespace WebApplication1.Controllers
         {
            return await _userService.CreateCourse(courseDto);
         }
+
+        [HttpGet("getAllCourseByUser")]
+       public async Task<List<Course>> GetAllCourse()
+        {
+            var course = await _userService.GetAllCourse();
+            return course;
+        }
     }
     
 

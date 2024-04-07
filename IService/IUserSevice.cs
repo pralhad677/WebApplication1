@@ -13,5 +13,6 @@ namespace WebApplication1.IService
         Task<string> LoginUser(UserDto user);
         Task<IEnumerable<T>> GetAllUsers();
         Task<dynamic> CreateCourse(CourseDto courseDto);
+        Task<List<Course>> GetAllCourse();
     }
 }

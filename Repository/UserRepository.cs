@@ -10,6 +10,7 @@ using WebApplication1.DTO;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Data.SqlClient;
 
 
 
@@ -118,10 +119,13 @@ namespace WebApplication1.Repository
                     string userEmail = tokenValidation.ExtractUserEmailFromClaims(claimsPrincipal);
                     Console.WriteLine($"User email: {userEmail}");
                     var course1 = _mapper.Map<CourseDto, Course>(courseDto);
-                    course1.UserId = 1;
+                    User user =   _dbContextFactory.Users.FirstOrDefault(u => u.Email ==userEmail)!;
+                    course1.UserId = user.Id;
                     EntityEntry<Course> courseEntry = await _dbContextFactory.Courses.AddAsync(course1);
                     Course course2 = courseEntry.Entity;
-                    return 'a';
+                    await _dbContextFactory.Courses.AddAsync(course2);
+                    await _dbContextFactory.SaveChangesAsync();
+                    return "courseCreated";
                 }
                 else
                 {
@@ -136,6 +140,34 @@ namespace WebApplication1.Repository
             }
         }
 
-        
+       async  public Task<List<Course>> GetAllCourse()
+        {
+            //  var entities = await context.YourEntities.Where(e => e.ID == particularID).ToList();
+       
+         //   return entities; ;
+            string authorizationHeader = _httpContextAccessor.HttpContext.Request.Headers["Authorization"]!;
+            string[] parts = authorizationHeader.Split(' ');
+            var token = parts[1];
+            TokenValidation tokenValidation = new TokenValidation();
+            var claimsPrincipal = tokenValidation.ValidateTokenAndGetClaims(token);
+
+            if (claimsPrincipal != null)
+            {
+                string userEmail = tokenValidation.ExtractUserEmailFromClaims(claimsPrincipal);
+                Console.WriteLine($"User email: {userEmail}");
+               
+                User user = _dbContextFactory.Users.FirstOrDefault(u => u.Email == userEmail)!;
+                //   var entities = await _dbContextFactory.Courses.Where(e => e.UserId == user.Id).ToListAsync();
+                var entities = await _dbContextFactory.Courses.FromSqlRaw("EXEC GetUserCoursesForUser @UserID",
+                    new SqlParameter("@UserID", user.Id)).ToListAsync();
+
+                return entities;
+            }
+            else
+            {
+                return [];
+            }
+           
+        }
     }
 }

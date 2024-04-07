@@ -41,5 +41,12 @@ namespace WebApplication1.Service
         {
             return await Repository.CreateCourse(courseDto);
         }
+       
+
+        async Task<List<Course>> IUserSevice<T>.GetAllCourse()
+        {
+            var course = await Repository.GetAllCourse();
+            return course;
+        }
     }
 }

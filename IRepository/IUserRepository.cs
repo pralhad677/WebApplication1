@@ -12,5 +12,6 @@ namespace WebApplication1.IRepository
         Task<string> LoginUser(UserDto user);
         Task<IEnumerable<T>> GetAllUsers();
         Task<dynamic> CreateCourse(CourseDto courseDto);
+        Task<List<Course>> GetAllCourse();
     }
 }
