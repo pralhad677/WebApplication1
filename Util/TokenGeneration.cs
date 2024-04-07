@@ -11,7 +11,8 @@ namespace WebApplication1.Util
         public string GenerateToken(string issuer, string audience, string email)
         {
             // Generate a secret key of sufficient length
-            var secretKey = GenerateSecretKey();
+            //  var secretKey = GenerateSecretKey();
+            var secretKey = "your_new_secret_key_with_at_least_16_characters";
 
             var claims = new[]
             {
@@ -20,6 +21,7 @@ namespace WebApplication1.Util
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+         //   new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_new_secret_key_with_at_least_16_characters"))
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var tokenHandler = new JwtSecurityTokenHandler();

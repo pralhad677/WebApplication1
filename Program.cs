@@ -4,6 +4,9 @@ using WebApplication1.IRepository;
 using WebApplication1.IService;
 using WebApplication1.Repository;
 using WebApplication1.Service;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +19,23 @@ builder.Services.AddSwaggerGen();
 var connectionString = builder.Configuration.GetConnectionString("connectionString");
 builder.Services.AddDbContext<MyDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped(typeof(IUserSevice<>),typeof(UserSevice<>));
-builder.Services.AddScoped(typeof(IUserRepository<>),typeof(UserRepository<>)); 
+builder.Services.AddScoped(typeof(IUserRepository<>),typeof(UserRepository<>));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "your_issuer",
+            ValidAudience = "your_audience",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_new_secret_key_with_at_least_16_characters"))
+        //IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secret_key"))
+        };
+    });
 
 var app = builder.Build();
 
@@ -29,6 +48,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
