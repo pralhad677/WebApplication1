@@ -4,6 +4,8 @@ using WebApplication1.IRepository;
 using WebApplication1.Model;
 using WebApplication1.Util;
 using BCrypt.Net;
+using Microsoft.EntityFrameworkCore.Internal;
+using System.Collections.Generic;
 
 namespace WebApplication1.Repository
 {
@@ -73,9 +75,10 @@ namespace WebApplication1.Repository
 
         
 
-        public Task<IEnumerable<T>> GetAllUsers()
+        public async Task<IEnumerable<T>> GetAllUsers()
         {
-            throw new NotImplementedException();
+            var allUser = (IEnumerable<T>) await _dbContextFactory.Users.ToListAsync();
+            return allUser;
         }
         public   string HashPassword(string password)
         {
